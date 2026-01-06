@@ -20,14 +20,14 @@ export default function DrawerLayout() {
             headerTitleAlign: "center",
           }}
         />
-         <Drawer.Screen
+         {/* <Drawer.Screen
           name="Settings"
           options={{
             title: "Settings",
             headerShown: true,
             headerTitleAlign: "center",
           }}
-        />
+        /> */}
       </Drawer>
     </GestureHandlerRootView>
   )

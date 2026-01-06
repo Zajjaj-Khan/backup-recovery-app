@@ -5,27 +5,54 @@ import { Image, Platform, SafeAreaView, ScrollView, StyleSheet, Text, View } fro
 export default function App() {
   const [assets, setAssets] = useState<MediaLibrary.Asset[]>([]);
   const [permissionResponse, requestPermission] = MediaLibrary.usePermissions();
+async function loadMedia() {
+  try {
+    console.log('📸 loadMedia() called');
 
+    let permission = permissionResponse;
 
-  useEffect(() => {
-    async function getPhotos() {
-    if (permissionResponse?.status !== 'granted') {
-      await requestPermission();
+    if (!permission || permission.status !== 'granted') {
+      permission = await requestPermission();
+      console.log('Permission:', permission.status);
     }
 
-    // Fetch all assets from the media library
-    const fetchedAssets = await MediaLibrary.getAssetsAsync({
-     mediaType: [MediaLibrary.MediaType.photo, MediaLibrary.MediaType.video], // include both
-      sortBy: [[MediaLibrary.SortBy.creationTime, false]], // descending (most recent)
-      first: 100, 
+    if (permission.status !== 'granted') {
+      console.log('Permission denied');
+      return;
+    }
+
+    const result = await MediaLibrary.getAssetsAsync({
+      mediaType: [
+        MediaLibrary.MediaType.photo,
+        MediaLibrary.MediaType.video,
+      ],
+      sortBy: [[MediaLibrary.SortBy.creationTime, false]],
+      first: 100,
     });
 
-    setAssets(fetchedAssets?.assets);
+    console.log('Assets fetched:', result.assets.length);
+
+    setAssets(result.assets);
+  } catch (err) {
+    console.error('❌ loadMedia error:', err);
   }
-    getPhotos();
-  }, []);
+}
 
+  useEffect(() => {
+    loadMedia();
+  }, [permissionResponse]);
 
+    useEffect(() => {
+    loadMedia();
+    
+    // Subscribe to media library updates
+    const subscription = MediaLibrary.addListener(loadMedia);
+
+    // Unsubscribe when the component unmounts
+    return () => {
+      subscription.remove();
+    };
+  }, [permissionResponse]);
 
   return (
     <SafeAreaView style={styles.container}>
