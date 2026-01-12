@@ -16,7 +16,7 @@ export default function DrawerLayout() {
           name="Home"
           options={{
             title: "Home",
-            headerShown: true,
+            headerShown: false,
             headerTitleAlign: "center",
           }}
         />
